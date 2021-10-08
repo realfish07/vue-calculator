@@ -441,8 +441,6 @@ export default {
 </script>
 
 <style lang="scss">
-@import url('https://fonts.googleapis.com/css2?family=Karla:wght@400;700&display=swap');
-
 $padding: 25px;
 $switchColor: #D1D5DB;
 $lightColor: #EFF6FF;
