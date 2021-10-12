@@ -20,12 +20,12 @@
         v-for="btn in btnList"
         :key="btn"
         :ref="btn"
-        :class="{ backspace: btn === 'backspace', operator: /\+|\-|\×|\÷|\=/.test(btn), equal: btn === '=', zero: btn === '0', symbol: /[^+\-×÷=\d\.]/.test(btn) }"
+        :class="{ operator: /\+|\-|\×|\÷|\=/.test(btn), equal: btn === '=', zero: btn === '0', symbol: /[^+\-×÷=\d\.]/.test(btn) }"
         class="btn"
         @pointerdown="pressBtn(btn)"
         @transitionend="removePressAnimation"
       >
-        <div class="btn-content">
+        <div class="btn-content" :class="{ backspace: btn === 'backspace' }">
           {{ btn === 'backspace' ? '' : btn }}
         </div>
       </div>
@@ -45,7 +45,7 @@ export default {
     const refResult = ref(null)
     const refExpression = ref(null)
 
-    watch(expression, async() => {
+    watch(expression, async () => {
       const el = refResult.value
       await nextTick()
       if (el && el.scrollWidth > el.clientWidth) {
@@ -53,7 +53,7 @@ export default {
       }
     })
 
-    watch(showResult, async() => {
+    watch(showResult, async () => {
       const el = refExpression.value
       await nextTick()
       if (el && el.scrollWidth > el.clientWidth) {
@@ -73,10 +73,8 @@ export default {
     prevExpression: '', // the expression except current operand or operator
     operand: '',
     operator: '',
-    // expression: '',
     result: 0,
     showAnimation: false, // show animation of expression and result or not
-    // showResult: false,
     isDarkTheme: false
   }),
   mounted() {
@@ -442,8 +440,8 @@ export default {
 
 <style lang="scss">
 $padding: 25px;
-$switchColor: #D1D5DB;
-$lightColor: #EFF6FF;
+$switchColor: #d1d5db;
+$lightColor: #eff6ff;
 $darkColor: #111827;
 $themes: (
   light: (
@@ -451,26 +449,27 @@ $themes: (
     primaryLight: lighten($lightColor, 5%),
     primaryDark: darken($lightColor, 10%),
     fontColor: #374151,
-    hoverColor: #FBBF24
+    hoverColor: #fbbf24,
   ),
   dark: (
     primaryColor: $darkColor,
     primaryLight: lighten($darkColor, 5%),
     primaryDark: darken($darkColor, 10%),
-    fontColor: #BFDBFE,
-    hoverColor: #B91C1C
+    fontColor: #bfdbfe,
+    hoverColor: #b91c1c,
   ),
 );
 
 @mixin themify($colors...) {
   @each $theme, $map in $themes {
-    .#{$theme}-theme &, &.#{$theme}-theme {
+    .#{$theme}-theme &,
+    &.#{$theme}-theme {
       $lists: ();
       @each $color in $colors {
-        $value: map-get(map-get($themes, $theme), '#{$color}');
+        $value: map-get(map-get($themes, $theme), "#{$color}");
         $lists: append($lists, $value);
       }
-      @content($lists);
+      @content ($lists);
     }
   }
 }
@@ -481,21 +480,25 @@ $themes: (
   user-select: none;
 }
 
-html, body, #app, .app-container {
+html,
+body,
+#app,
+.app-container {
   height: 100%;
   width: 100%;
 }
 
 .app-container {
   padding: 20px;
-  font-family: 'Karla', sans-serif;
+  font-family: "Karla", sans-serif;
   min-width: 320px;
   min-height: 600px;
-  @include themify('fontColor', 'primaryColor') using ($lists) {
+  @include themify("fontColor", "primaryColor") using ($lists) {
     color: nth($lists, 1);
     background-color: nth($lists, 2);
   }
 }
+
 .calculator {
   position: relative;
   top: 50%;
@@ -510,11 +513,13 @@ html, body, #app, .app-container {
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(9, 1fr);
   grid-gap: 2% 4%;
-  @include themify('primaryLight', 'primaryDark') using ($lists) {
-    box-shadow: -7px -7px 20px nth($lists, 1), -4px -4px 5px nth($lists, 1), 7px 7px 20px nth($lists, 2), 4px 4px 5px nth($lists, 2);
+  @include themify("primaryLight", "primaryDark") using ($lists) {
+    box-shadow: -7px -7px 20px nth($lists, 1), -4px -4px 5px nth($lists, 1),
+      7px 7px 20px nth($lists, 2), 4px 4px 5px nth($lists, 2);
     border: 1px solid scale-color(nth($lists, 1), $alpha: -50%);
   }
 }
+
 .input {
   & * {
     user-select: text;
@@ -528,10 +533,12 @@ html, body, #app, .app-container {
   border-radius: 8px;
   font-size: 30px;
   overflow: hidden;
-  @include themify('primaryLight', 'primaryDark') using ($lists) {
-    box-shadow: inset 2px 2px 4px nth($lists, 2), inset -2px -2px 4px nth($lists, 1);
+  @include themify("primaryLight", "primaryDark") using ($lists) {
+    box-shadow: inset 2px 2px 4px nth($lists, 2),
+      inset -2px -2px 4px nth($lists, 1);
   }
-  .expression, .result {
+  .expression,
+  .result {
     overflow-x: auto;
     overflow-y: hidden;
     &::-webkit-scrollbar {
@@ -545,7 +552,7 @@ html, body, #app, .app-container {
     width: calc(100% - 50px);
     font-size: 16px;
     transform-origin: right;
-    transition: .3s ease;
+    transition: 0.3s ease;
     transition-property: transform, top;
     &.animate {
       top: 50%;
@@ -556,7 +563,7 @@ html, body, #app, .app-container {
   .result {
     position: relative;
     top: 15%;
-    transition: top .3s ease;
+    transition: top 0.3s ease;
     width: 100%;
     &.animate {
       top: 150%;
@@ -570,6 +577,7 @@ html, body, #app, .app-container {
     white-space: nowrap;
   }
 }
+
 .switch-wrap {
   grid-row: 1 / 2;
   grid-column: 1 / 5;
@@ -587,13 +595,15 @@ html, body, #app, .app-container {
     background: $switchColor;
     border: 1px solid scale-color($switchColor, $alpha: -50%);
     &.inactive {
-      box-shadow: inset 2px 2px 4px darken($switchColor, 20%), inset -2px -2px 4px lighten($switchColor, 12%);
+      box-shadow: inset 2px 2px 4px darken($switchColor, 20%),
+        inset -2px -2px 4px lighten($switchColor, 12%);
       &:after {
         left: 5%;
       }
     }
     &.active {
-      box-shadow: inset -2px -2px 3px darken($switchColor, 20%), inset 2px 2px 5px lighten($switchColor, 12%);
+      box-shadow: inset -2px -2px 3px darken($switchColor, 20%),
+        inset 2px 2px 5px lighten($switchColor, 12%);
       &:after {
         left: 100%;
         margin-left: -48%;
@@ -606,41 +616,15 @@ html, body, #app, .app-container {
       width: 43%;
       height: 0;
       padding-top: 43%;
-      background: map-get(map-get($themes, 'light'), 'primaryLight');
+      background: map-get(map-get($themes, "light"), "primaryLight");
       box-shadow: 0 0 5px rgb(0 0 0 / 25%);
       border-radius: 50%;
       transform: translateY(-50%);
-      transition: left .3s, margin-left .3s;
+      transition: left 0.3s, margin-left 0.3s;
     }
   }
 }
-.backspace {
-  transition-property: none;
-  .btn-content {
-    width: 10%;
-    height: 10%;
-    border-top: 2px solid;
-    border-left: 2px solid;
-    transform: rotate(-45deg) translate(-100%, -100%);
-    transform-origin: left;
-    @include themify('fontColor') using ($lists) {
-      &:after {
-        background-color: nth($lists, 1);
-      }
-    }
-    &:after {
-      content: "";
-      position: relative;
-      top: -1px;
-      left: -1px;
-      display: block;
-      width: 2px;
-      height: 450%;
-      transform: rotate(-45deg) translateX(-1px);
-      transform-origin: top left;
-    }
-  }
-}
+
 .btn {
   position: relative;
   width: 100%;
@@ -648,30 +632,32 @@ html, body, #app, .app-container {
   padding-top: 100%;
   border-radius: 50%;
   font-weight: bold;
-  transition: box-shadow 0.1s ease-in-out, color 0.25s ease, background-color 0.25s ease;
-  transition-property: color, background-color;
+  transition: box-shadow 0.1s ease-in-out;
+  transition-property: none;
   &.operator {
-    color: #F87171;
+    color: #f87171;
   }
   &.symbol {
-    color: #34D399;
-    &.backspace :after {
-      background-color: #34D399;
+    color: #34d399;
+    .backspace {
+      background-color: #34d399;
     }
   }
-  @include themify('primaryLight', 'primaryDark') using ($lists) {
-    box-shadow: inset 0 0 0 nth($lists, 2), inset 0 0 0 nth($lists, 1), 3px 3px 6px nth($lists, 2), -2px -2px 5px nth($lists, 1);
+  @include themify("primaryLight", "primaryDark") using ($lists) {
+    box-shadow: inset 0 0 0 nth($lists, 2), inset 0 0 0 nth($lists, 1),
+      3px 3px 6px nth($lists, 2), -2px -2px 5px nth($lists, 1);
     &:active {
       transition-property: box-shadow;
-      box-shadow: inset 2px 2px 4px nth($lists, 2), inset -2px -2px 4px nth($lists, 1), 0 0 0 nth($lists, 2), 0 0 0 nth($lists, 1);
+      box-shadow: inset 2px 2px 4px nth($lists, 2),
+        inset -2px -2px 4px nth($lists, 1), 0 0 0 nth($lists, 2),
+        0 0 0 nth($lists, 1);
     }
   }
   @media (hover: hover) {
     &:hover {
-      transition-property: none;
-      @include themify('hoverColor') using ($lists) {
+      @include themify("hoverColor") using ($lists) {
         color: nth($lists, 1);
-        &.backspace :after {
+        .backspace {
           background-color: nth($lists, 1);
         }
       }
@@ -679,30 +665,63 @@ html, body, #app, .app-container {
   }
   &.animate {
     transition-property: box-shadow;
-    @include themify('primaryLight', 'primaryDark', 'hoverColor') using ($lists) {
-      box-shadow: inset 2px 2px 4px nth($lists, 2), inset -2px -2px 4px nth($lists, 1), 0 0 0 nth($lists, 2), 0 0 0 nth($lists, 1);
-      color: nth($lists, 3);
-      &.backspace :after {
-        background-color: nth($lists, 3);
-      }
+    @include themify("primaryLight", "primaryDark", "hoverColor") using ($lists) {
+      box-shadow: inset 2px 2px 4px nth($lists, 2),
+        inset -2px -2px 4px nth($lists, 1), 0 0 0 nth($lists, 2),
+        0 0 0 nth($lists, 1);
     }
   }
 }
+
 .btn-content {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  transition: color 0.25s ease, background-color 0.25s ease;
 }
+
 .equal {
   grid-row: 8 / 10;
   grid-column: 4 / 5;
   padding-top: 220%;
   border-radius: 50px;
 }
+
 .zero {
   grid-column: 1 / 3;
   padding-top: 45%;
   border-radius: 50px;
+}
+
+.backspace {
+  position: absolute;
+  width: 18px;
+  height: 12px;
+  background-color: #34d399;
+  border-radius: 3px;
+  clip-path: polygon(30% 0, 100% 0, 100% 100%, 30% 100%, 0 50%);
+  @include themify("primaryColor") using ($lists) {
+    &:before,
+    &:after {
+      background-color: nth($lists, 1);
+    }
+  }
+  &:before,
+  &:after {
+    content: "";
+    position: absolute;
+    left: 60%;
+    top: 50%;
+    height: 10px;
+    width: 2px;
+    border-radius: 5px;
+  }
+  &:before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  &:after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
 }
 </style>
