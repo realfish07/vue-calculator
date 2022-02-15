@@ -1,0 +1,19 @@
+$padding: 25px;
+$lightColor: #eff6ff;
+$darkColor: #111827;
+$themes: (
+  light: (
+    primaryColor: $lightColor,
+    primaryLight: lighten($lightColor, 5%),
+    primaryDark: darken($lightColor, 10%),
+    fontColor: #374151,
+    hoverColor: #fbbf24,
+  ),
+  dark: (
+    primaryColor: $darkColor,
+    primaryLight: lighten($darkColor, 5%),
+    primaryDark: darken($darkColor, 10%),
+    fontColor: #bfdbfe,
+    hoverColor: #b91c1c,
+  ),
+);

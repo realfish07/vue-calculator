@@ -1,120 +1,67 @@
 <template>
-  <div class="app-container" :class="{ 'dark-theme': isDarkTheme, 'light-theme': !isDarkTheme }">
+  <div
+    class="app-container"
+    :class="{ 'dark-theme': isDarkTheme, 'light-theme': !isDarkTheme }"
+  >
     <div class="calculator">
-      <div class="switch-wrap">
-        <div
-          class="switch"
-          :class="{ active: isDarkTheme, inactive: !isDarkTheme }"
-          @click="isDarkTheme = !isDarkTheme"
-        />
-      </div>
-      <div class="input">
-        <div ref="refExpression" class="expression" :class="{ animate: showAnimation }">
-          <span>{{ showResult ? expression : '' }}</span>
-        </div>
-        <div ref="refResult" class="result" :class="{ animate: showAnimation }">
-          <span>{{ showResult || !expression ? result : expression }}</span>
-        </div>
-      </div>
-      <div
+      <Switch
+        :is-dark-theme="isDarkTheme"
+        @changeTheme="bool => isDarkTheme = bool"
+      />
+      <Input
+        :show-animation="showAnimation"
+        :show-result="showResult"
+        :expression="expression"
+        :result="result"
+      />
+      <Button
         v-for="btn in btnList"
         :key="btn"
-        :ref="btn"
-        :class="{ operator: /\+|\-|\×|\÷|\=/.test(btn), equal: btn === '=', zero: btn === '0', symbol: /[^+\-×÷=\d\.]/.test(btn) }"
-        class="btn"
-        @pointerdown="pressBtn(btn)"
-        @transitionend="removePressAnimation"
-      >
-        <div class="btn-content" :class="{ backspace: btn === 'backspace' }">
-          {{ btn === 'backspace' ? '' : btn }}
-        </div>
-      </div>
+        :btn="btn"
+        @pressBtn="pressBtn"
+      />
     </div>
   </div>
 </template>
 
 <script>
-import { ref, watch, nextTick } from 'vue'
+import Switch from '@/components/Switch.vue'
+import Input from '@/components/Input.vue'
+import Button from '@/components/Button.vue'
 
 const scientificNotationRegex = /\d(\.\d+)?[Ee][+-]\d+/g
 export default {
   name: 'App',
-  setup() {
-    const expression = ref('')
-    const showResult = ref(false)
-    const refResult = ref(null)
-    const refExpression = ref(null)
-
-    watch(expression, async () => {
-      const el = refResult.value
-      await nextTick()
-      if (el && el.scrollWidth > el.clientWidth) {
-        el.scrollLeft = el.scrollWidth - el.clientWidth
-      }
-    })
-
-    watch(showResult, async () => {
-      const el = refExpression.value
-      await nextTick()
-      if (el && el.scrollWidth > el.clientWidth) {
-        el.scrollLeft = el.scrollWidth - el.clientWidth
-      }
-    })
-
-    return {
-      expression,
-      showResult,
-      refResult,
-      refExpression
-    }
-  },
+  components: { Switch, Input, Button },
   data: () => ({
     btnList: ['AC', '±', '%', '÷', '(', ')', 'backspace', '×', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', '.'],
+    expression: '',
     prevExpression: '', // the expression except current operand or operator
     operand: '',
     operator: '',
     result: 0,
+    showResult: false,
     showAnimation: false, // show animation of expression and result or not
     isDarkTheme: false
   }),
   mounted() {
-    window.addEventListener('keydown', this.detectInput)
+    if (window.matchMedia) {
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) this.isDarkTheme = true
+
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', this.changeTheme)
+    }
   },
   beforeUnmount() {
-    window.removeEventListener('keydown', this.detectInput)
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', this.changeTheme)
+    }
   },
   methods: {
     /**
-     * remove button press animation
+     * change dark/light theme
      */
-    removePressAnimation(e) {
-      if (!e.target.classList.contains('animate')) return
-      e.target.classList.remove('animate')
-    },
-    /**
-     * detect keyboard input
-     */
-    detectInput(e) {
-      const key = e.key.toLowerCase()
-      if (this.btnList.includes(key)) {
-        this.pressBtn(key)
-        return
-      }
-
-      switch (key) {
-        case '*':
-          this.pressBtn('×')
-          break
-        case '/':
-          this.pressBtn('÷')
-          break
-        case 'enter':
-          this.pressBtn('=')
-          break
-        case 'escape':
-          this.pressBtn('AC')
-          break
-      }
+    changeTheme(e) {
+      this.isDarkTheme = e.matches
     },
     /**
      * Press btns handler
@@ -122,14 +69,7 @@ export default {
      * @param {String} btn
      */
     pressBtn(btn) {
-      if (this.$refs[btn]) {
-        for (const el of this.btnList) {
-          if (this.$refs[el]) this.$refs[el].classList.remove('animate')
-        }
-        this.$refs[btn].classList.add('animate')
-      }
-
-      const result = this.showResult
+      const showResult = this.showResult
       if (this.showResult) {
         if (btn === '=') {
           this.animate()
@@ -149,13 +89,13 @@ export default {
       }
 
       if (btn === '±') {
-        if (result) this.operand = this.expression
+        if (showResult) this.operand = this.expression
         this.negate()
         return
       }
 
       if (btn === '%') {
-        if (result) this.operand = this.expression
+        if (showResult) this.operand = this.expression
         if (!this.operand) return
 
         this.operand = `${this.precise(+this.operand * 0.01)}`
@@ -212,7 +152,7 @@ export default {
         this.operator = this.operator === '+' ? '-' : '+'
         if (this.operand) this.prevExpression = this.prevExpression.slice(0, -1) + this.operator
       } else {
-        if (!(+this.operand || /^(-0|0)$/.test(this.operand))) return
+        if (!(+this.operand || /^(-?0)$/.test(this.operand))) return
         this.operand = `${-this.operand}`
       }
       this.expression = this.prevExpression + (this.operand ? this.operand : this.operator)
@@ -238,15 +178,15 @@ export default {
 
       if (/\(|\)/.test(this.expression.slice(-1))) {
         this.prevExpression = this.expression
-      } else if (/[^\d\.]/.test(this.expression.slice(-1))) {
+      } else if (/[^\d.]/.test(this.expression.slice(-1))) {
         this.prevExpression = this.expression.slice(0, -1)
       } else {
         // is scientific notation or not
         if (lastIndex === this.expression.length) this.operand = item
-        else this.operand = this.expression.split(/[^\d\.]/g).filter(item => item).slice(-1)[0] || ''
+        else this.operand = this.expression.split(/[^\d.]/g).filter(item => item).slice(-1)[0] || ''
 
         this.prevExpression = this.expression.slice(0, this.operand ? 0 - this.operand.length : 0)
-        if (this.prevExpression.slice(-1) === '-' && /[^\d\.]/.test(this.prevExpression.slice(-2, -1))) {
+        if (this.prevExpression.slice(-1) === '-' && /[^\d.]/.test(this.prevExpression.slice(-2, -1))) {
           this.operand = `-${this.operand}`
           this.prevExpression = this.prevExpression.slice(0, -1)
         }
@@ -311,7 +251,7 @@ export default {
         this.prevExpression = '0'
       }
 
-      if (!this.prevExpression || /[^\d\.\)]/.test(this.prevExpression.slice(-1))) {
+      if (!this.prevExpression || /[^\d.)]/.test(this.prevExpression.slice(-1))) {
         if (!this.operand && !this.prevExpression) this.prevExpression = this.expression
         else if (Number.isNaN(+this.operand)) this.prevExpression = this.prevExpression.slice(0, -1)
         else this.prevExpression = this.prevExpression + `${+this.operand}`
@@ -337,7 +277,7 @@ export default {
           minusIndex = -1
         }
 
-        if ((!(match.index - 1) || /[^\d]/.test(this.expression[match.index - 2])) && this.expression[match.index - 1] === '-') {
+        if ((!(match.index - 1) || /[^\d)]/.test(this.expression[match.index - 2])) && this.expression[match.index - 1] === '-') {
           minusIndex = match.index - 1
         } else {
           if (lastIndex !== match.index) tokens.push(this.expression.slice(lastIndex, match.index))
@@ -364,7 +304,7 @@ export default {
       // Returns true if 'op2' has higher or same precedence as 'op1', otherwise returns false.
       const hasPrecedence = (op1, op2) => {
         if (/\(|\)/.test(op2)) return false
-        if (/\÷|\×/.test(op1) && /\+|\-/.test(op2)) return false
+        if (/÷|×/.test(op1) && /\+|-/.test(op2)) return false
         return true
       }
       const values = []
@@ -439,55 +379,6 @@ export default {
 </script>
 
 <style lang="scss">
-$padding: 25px;
-$switchColor: #d1d5db;
-$lightColor: #eff6ff;
-$darkColor: #111827;
-$themes: (
-  light: (
-    primaryColor: $lightColor,
-    primaryLight: lighten($lightColor, 5%),
-    primaryDark: darken($lightColor, 10%),
-    fontColor: #374151,
-    hoverColor: #fbbf24,
-  ),
-  dark: (
-    primaryColor: $darkColor,
-    primaryLight: lighten($darkColor, 5%),
-    primaryDark: darken($darkColor, 10%),
-    fontColor: #bfdbfe,
-    hoverColor: #b91c1c,
-  ),
-);
-
-@mixin themify($colors...) {
-  @each $theme, $map in $themes {
-    .#{$theme}-theme &,
-    &.#{$theme}-theme {
-      $lists: ();
-      @each $color in $colors {
-        $value: map-get(map-get($themes, $theme), "#{$color}");
-        $lists: append($lists, $value);
-      }
-      @content ($lists);
-    }
-  }
-}
-
-* {
-  margin: 0;
-  box-sizing: border-box;
-  user-select: none;
-}
-
-html,
-body,
-#app,
-.app-container {
-  height: 100%;
-  width: 100%;
-}
-
 .app-container {
   padding: 20px;
   font-family: "Karla", sans-serif;
@@ -517,211 +408,6 @@ body,
     box-shadow: -7px -7px 20px nth($lists, 1), -4px -4px 5px nth($lists, 1),
       7px 7px 20px nth($lists, 2), 4px 4px 5px nth($lists, 2);
     border: 1px solid scale-color(nth($lists, 1), $alpha: -50%);
-  }
-}
-
-.input {
-  & * {
-    user-select: text;
-  }
-  position: relative;
-  grid-column: 1 / 5;
-  grid-row: 2 / 4;
-  padding: $padding;
-  letter-spacing: 0.15px;
-  transition: color 0.25s ease;
-  border-radius: 8px;
-  font-size: 30px;
-  overflow: hidden;
-  @include themify("primaryLight", "primaryDark") using ($lists) {
-    box-shadow: inset 2px 2px 4px nth($lists, 2),
-      inset -2px -2px 4px nth($lists, 1);
-  }
-  .expression,
-  .result {
-    overflow-x: auto;
-    overflow-y: hidden;
-    &::-webkit-scrollbar {
-      width: 0;
-      height: 0;
-    }
-  }
-  .expression {
-    position: absolute;
-    top: 15%;
-    width: calc(100% - 50px);
-    font-size: 16px;
-    transform-origin: right;
-    transition: 0.3s ease;
-    transition-property: transform, top;
-    &.animate {
-      top: 50%;
-      transform: scale(2);
-      transition-duration: 0s;
-    }
-  }
-  .result {
-    position: relative;
-    top: 15%;
-    transition: top 0.3s ease;
-    width: 100%;
-    &.animate {
-      top: 150%;
-      transition-duration: 0s;
-    }
-  }
-  span {
-    width: 100%;
-    text-align: right;
-    display: inline-block;
-    white-space: nowrap;
-  }
-}
-
-.switch-wrap {
-  grid-row: 1 / 2;
-  grid-column: 1 / 5;
-  position: relative;
-  top: 50%;
-  width: 15%;
-  height: 50%;
-  margin-left: auto;
-  .switch {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 10px;
-    cursor: pointer;
-    background: $switchColor;
-    border: 1px solid scale-color($switchColor, $alpha: -50%);
-    &.inactive {
-      box-shadow: inset 2px 2px 4px darken($switchColor, 20%),
-        inset -2px -2px 4px lighten($switchColor, 12%);
-      &:after {
-        left: 5%;
-      }
-    }
-    &.active {
-      box-shadow: inset -2px -2px 3px darken($switchColor, 20%),
-        inset 2px 2px 5px lighten($switchColor, 12%);
-      &:after {
-        left: 100%;
-        margin-left: -48%;
-      }
-    }
-    &:after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      width: 43%;
-      height: 0;
-      padding-top: 43%;
-      background: map-get(map-get($themes, "light"), "primaryLight");
-      box-shadow: 0 0 5px rgb(0 0 0 / 25%);
-      border-radius: 50%;
-      transform: translateY(-50%);
-      transition: left 0.3s, margin-left 0.3s;
-    }
-  }
-}
-
-.btn {
-  position: relative;
-  width: 100%;
-  height: 0;
-  padding-top: 100%;
-  border-radius: 50%;
-  font-weight: bold;
-  transition: box-shadow 0.1s ease-in-out;
-  transition-property: none;
-  &.operator {
-    color: #f87171;
-  }
-  &.symbol {
-    color: #34d399;
-    .backspace {
-      background-color: #34d399;
-    }
-  }
-  @include themify("primaryLight", "primaryDark") using ($lists) {
-    box-shadow: inset 0 0 0 nth($lists, 2), inset 0 0 0 nth($lists, 1),
-      3px 3px 6px nth($lists, 2), -2px -2px 5px nth($lists, 1);
-    &:active {
-      transition-property: box-shadow;
-      box-shadow: inset 2px 2px 4px nth($lists, 2),
-        inset -2px -2px 4px nth($lists, 1), 0 0 0 nth($lists, 2),
-        0 0 0 nth($lists, 1);
-    }
-  }
-  @media (hover: hover) {
-    &:hover {
-      @include themify("hoverColor") using ($lists) {
-        color: nth($lists, 1);
-        .backspace {
-          background-color: nth($lists, 1);
-        }
-      }
-    }
-  }
-  &.animate {
-    transition-property: box-shadow;
-    @include themify("primaryLight", "primaryDark", "hoverColor") using ($lists) {
-      box-shadow: inset 2px 2px 4px nth($lists, 2),
-        inset -2px -2px 4px nth($lists, 1), 0 0 0 nth($lists, 2),
-        0 0 0 nth($lists, 1);
-    }
-  }
-}
-
-.btn-content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transition: color 0.25s ease, background-color 0.25s ease;
-}
-
-.equal {
-  grid-row: 8 / 10;
-  grid-column: 4 / 5;
-  padding-top: 220%;
-  border-radius: 50px;
-}
-
-.zero {
-  grid-column: 1 / 3;
-  padding-top: 45%;
-  border-radius: 50px;
-}
-
-.backspace {
-  position: absolute;
-  width: 18px;
-  height: 12px;
-  background-color: #34d399;
-  border-radius: 3px;
-  clip-path: polygon(30% 0, 100% 0, 100% 100%, 30% 100%, 0 50%);
-  @include themify("primaryColor") using ($lists) {
-    &:before,
-    &:after {
-      background-color: nth($lists, 1);
-    }
-  }
-  &:before,
-  &:after {
-    content: "";
-    position: absolute;
-    left: 60%;
-    top: 50%;
-    height: 10px;
-    width: 2px;
-    border-radius: 5px;
-  }
-  &:before {
-    transform: translate(-50%, -50%) rotate(45deg);
-  }
-  &:after {
-    transform: translate(-50%, -50%) rotate(-45deg);
   }
 }
 </style>

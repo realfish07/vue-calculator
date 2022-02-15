@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { registerSW } from 'virtual:pwa-register'
+import './styles/index.scss'
 import App from './App.vue'
 
 const intervalMS = 60 * 60 * 1000

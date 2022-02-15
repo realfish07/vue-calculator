@@ -1,0 +1,13 @@
+* {
+  margin: 0;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+html,
+body,
+#app,
+.app-container {
+  height: 100%;
+  width: 100%;
+}

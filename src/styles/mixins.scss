@@ -1,0 +1,15 @@
+@import "./variables.scss";
+
+@mixin themify($colors...) {
+  @each $theme, $map in $themes {
+    .#{$theme}-theme &,
+    &.#{$theme}-theme {
+      $lists: ();
+      @each $color in $colors {
+        $value: map-get(map-get($themes, $theme), "#{$color}");
+        $lists: append($lists, $value);
+      }
+      @content ($lists);
+    }
+  }
+}
