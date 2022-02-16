@@ -382,8 +382,6 @@ export default {
 .app-container {
   padding: 20px;
   font-family: "Karla", sans-serif;
-  min-width: 320px;
-  min-height: 600px;
   @include themify("fontColor", "primaryColor") using ($lists) {
     color: nth($lists, 1);
     background-color: nth($lists, 2);
@@ -399,7 +397,7 @@ export default {
   height: 600px;
   padding: 0 $padding $padding;
   border-radius: 12px;
-  font-size: 20px;
+  font-size: 24px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(9, 1fr);
@@ -408,6 +406,12 @@ export default {
     box-shadow: -7px -7px 20px nth($lists, 1), -4px -4px 5px nth($lists, 1),
       7px 7px 20px nth($lists, 2), 4px 4px 5px nth($lists, 2);
     border: 1px solid scale-color(nth($lists, 1), $alpha: -50%);
+  }
+  @media only screen and (max-width: 450px) {
+    width: 100%;
+    height: 100%;
+    padding: 0 6vw 6vw;
+    font-size: 7vw;
   }
 }
 </style>

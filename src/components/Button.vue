@@ -147,8 +147,10 @@ function addPressAnimation() {
 
 .backspace {
   position: absolute;
-  width: 18px;
-  height: 12px;
+  width: 30%;
+  height: 24%;
+  min-width: 18px;
+  min-height: 12px;
   background-color: #34d399;
   border-radius: 3px;
   clip-path: polygon(30% 0, 100% 0, 100% 100%, 30% 100%, 0 50%);

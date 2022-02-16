@@ -83,6 +83,9 @@ watch(showResult, async() => {
     display: inline-block;
     white-space: nowrap;
   }
+  @media only screen and (max-width: 450px) {
+    padding: 5vw;
+  }
 }
 
 .expression,
@@ -103,6 +106,9 @@ watch(showResult, async() => {
   transform-origin: right;
   transition: 0.3s ease;
   transition-property: transform, top;
+  @media only screen and (max-width: 450px) {
+    font-size: 6vw;
+  }
   &.animate {
     top: 50%;
     transform: scale(2);
@@ -112,9 +118,13 @@ watch(showResult, async() => {
 
 .result {
   position: relative;
-  top: 15%;
-  transition: top 0.3s ease;
+  top: 30%;
   width: 100%;
+  transition: top 0.3s ease;
+  @media only screen and (max-width: 450px) {
+    top: 45%;
+    font-size: 10vw;
+  }
   &.animate {
     top: 150%;
     transition-duration: 0s;

@@ -27,9 +27,9 @@ $switchColor: #d1d5db;
   grid-row: 1 / 2;
   grid-column: 1 / 5;
   position: relative;
-  top: 50%;
-  width: 15%;
-  height: 50%;
+  top: calc(100% - 22px);
+  width: 40px;
+  height: 22px;
   margin-left: auto;
 }
 
