@@ -3,23 +3,25 @@
     class="app-container"
     :class="{ 'dark-theme': isDarkTheme, 'light-theme': !isDarkTheme }"
   >
-    <div class="calculator">
-      <Switch
-        :is-dark-theme="isDarkTheme"
-        @changeTheme="bool => isDarkTheme = bool"
-      />
-      <Input
-        :show-animation="showAnimation"
-        :show-result="showResult"
-        :expression="expression"
-        :result="result"
-      />
-      <Button
-        v-for="btn in btnList"
-        :key="btn"
-        :btn="btn"
-        @pressBtn="pressBtn"
-      />
+    <div class="main-content">
+      <div class="calculator">
+        <Switch
+          :is-dark-theme="isDarkTheme"
+          @changeTheme="bool => isDarkTheme = bool"
+        />
+        <Input
+          :show-animation="showAnimation"
+          :show-result="showResult"
+          :expression="expression"
+          :result="result"
+        />
+        <Button
+          v-for="btn in btnList"
+          :key="btn"
+          :btn="btn"
+          @pressBtn="pressBtn"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -379,9 +381,12 @@ export default {
 </script>
 
 <style lang="scss">
-.app-container {
+.main-content {
+  width: 100%;
+  height: 100%;
+  // min-width: 360px;
+  min-height: 640px;
   padding: 20px;
-  font-family: "Karla", sans-serif;
   @include themify("fontColor", "primaryColor") using ($lists) {
     color: nth($lists, 1);
     background-color: nth($lists, 2);
@@ -395,7 +400,7 @@ export default {
   transform: translate(-50%, -50%);
   width: 320px;
   height: 600px;
-  padding: 0 $padding $padding;
+  padding: 0 25px 25px;
   border-radius: 12px;
   font-size: 24px;
   display: grid;
@@ -407,7 +412,7 @@ export default {
       7px 7px 20px nth($lists, 2), 4px 4px 5px nth($lists, 2);
     border: 1px solid scale-color(nth($lists, 1), $alpha: -50%);
   }
-  @media only screen and (max-width: 450px) {
+  @media only screen and (max-width: $maxWidth) {
     width: 100%;
     height: 100%;
     padding: 0 6vw 6vw;

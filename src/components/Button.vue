@@ -4,7 +4,6 @@
     :class="{ operator: /\+|\-|\×|\÷|\=/.test(btn), equal: btn === '=', zero: btn === '0', symbol: /[^+\-×÷=\d\.]/.test(btn) }"
     class="btn"
     @pointerdown="addPressAnimation"
-    @transitionend="removePressAnimation"
   >
     <div
       class="btn-content"
@@ -26,6 +25,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['pressBtn'])
 const refBtn = ref(null)
+const interval = '100ms'
+let timer = null
 
 onMounted(() => {
   window.addEventListener('keydown', detectInput)
@@ -59,19 +60,15 @@ function detectInput(e) {
 }
 
 /**
- * remove button press animation
- */
-function removePressAnimation(e) {
-  if (!e.target.classList.contains('animate')) return
-  e.target.classList.remove('animate')
-}
-
-/**
  * add button press animation
  */
 function addPressAnimation() {
   emit('pressBtn', props.btn)
   refBtn.value.classList.add('animate')
+  if (timer) clearTimeout(timer)
+  timer = setTimeout(() => {
+    refBtn.value.classList.remove('animate')
+  }, interval.slice(0, -2))
 }
 </script>
 
@@ -83,7 +80,7 @@ function addPressAnimation() {
   padding-top: 100%;
   border-radius: 50%;
   font-weight: bold;
-  transition: box-shadow 0.1s ease-in-out;
+  transition: box-shadow v-bind(interval) ease-in-out;
   transition-property: none;
   &.operator {
     color: #f87171;

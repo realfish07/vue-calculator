@@ -67,7 +67,7 @@ watch(showResult, async() => {
   position: relative;
   grid-column: 1 / 5;
   grid-row: 2 / 4;
-  padding: $padding;
+  padding: 25px;
   letter-spacing: 0.15px;
   transition: color 0.25s ease;
   border-radius: 8px;
@@ -83,7 +83,7 @@ watch(showResult, async() => {
     display: inline-block;
     white-space: nowrap;
   }
-  @media only screen and (max-width: 450px) {
+  @media only screen and (max-width: $maxWidth) {
     padding: 5vw;
   }
 }
@@ -106,7 +106,8 @@ watch(showResult, async() => {
   transform-origin: right;
   transition: 0.3s ease;
   transition-property: transform, top;
-  @media only screen and (max-width: 450px) {
+  @media only screen and (max-width: $maxWidth) {
+    width: calc(100% - 10vw);
     font-size: 6vw;
   }
   &.animate {
@@ -121,7 +122,7 @@ watch(showResult, async() => {
   top: 30%;
   width: 100%;
   transition: top 0.3s ease;
-  @media only screen and (max-width: 450px) {
+  @media only screen and (max-width: $maxWidth) {
     top: 45%;
     font-size: 10vw;
   }
